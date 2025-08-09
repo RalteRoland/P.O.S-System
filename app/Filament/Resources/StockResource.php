@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\StockResource\Pages;
 use App\Filament\Resources\StockResource\RelationManagers;
 use App\Models\Stock;
+use Carbon\Carbon;
 use Filament\Actions\SelectAction;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -45,19 +46,23 @@ class StockResource extends Resource
     {
         return $table
             ->columns([
-                 Tables\Columns\TextColumn::make('product.name')
+                TextColumn::make('product.name')
                 ->label('Product'),
-                Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('price'),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('quantity'),
+                TextColumn::make('price'),
+                TextColumn::make('created_at')
                 ->dateTime()
-                ->label('Added On'),
+                ->formatStateUsing(fn ($state) => Carbon::parse($state)->format('d M Y')),
+                TextColumn::make('price')->money('INR')
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make(),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -79,8 +84,27 @@ class StockResource extends Resource
             'index' => Pages\ListStocks::route('/'),
             'create' => Pages\CreateStock::route('/create'),
             'edit' => Pages\EditStock::route('/{record}/edit'),
+            'bulk-stock-entry' => Pages\BulkStockEntry::route('/bulk-stock-entry'),
+
         ];
     }
+
+    public static function getNavigationItems(): array
+    {
+        return [
+            NavigationItem::make('Stocks') // 👈 Add back original link
+                ->url(self::getUrl('index')) // Links to the main stock list
+                ->icon('heroicon-o-rectangle-stack'),
+
+
+            NavigationItem::make('Bulk Stock Entry') // 👈 Your custom page
+                ->url(self::getUrl('bulk-stock-entry'))
+                ->icon('heroicon-o-plus-circle')
+                ->group('Stock Management'),
+        ];
+    }
+
+
 
 
 }

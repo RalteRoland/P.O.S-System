@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -15,7 +16,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Textarea;
-
+use Filament\Tables\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteAction as ActionsDeleteAction;
 
 class ProductResource extends Resource
 {
@@ -45,16 +48,26 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('barcode')->searchable(),
-                TextColumn::make('description')->limit(50),
-                TextColumn::make('created_at')->dateTime()->label('Added On'),
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('barcode')
+                    ->searchable(),
+                TextColumn::make('description')
+                    ->limit(50),
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->formatStateUsing(fn ($state) => Carbon::parse($state)->format('d M Y')),
+                
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make(),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
